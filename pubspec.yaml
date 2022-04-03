@@ -36,6 +36,7 @@ dependencies:
   cupertino_icons: ^1.0.2
   provider: ^6.0.2
   location: ^4.3.0
+  one_context: ^1.1.1
   dartz: ^0.10.1
   modal_progress_hud_nsn: ^0.1.0-nullsafety-1
 

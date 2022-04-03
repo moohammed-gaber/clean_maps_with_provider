@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:one_context/one_context.dart';
 import 'package:task1/core/device/device_location/device_location.dart';
 import 'package:task1/features/map/data/remote/data_sources/map_remote_data_source.dart';
 import 'package:task1/features/map/presentation/manager/states.dart';
@@ -10,6 +11,7 @@ class MapManager with ChangeNotifier {
   MapManager(this._mapRemoteDataSource, this.deviceLocation) {
     customersState = CustomersIdle();
     getCustomers();
+    getCurrentLocation();
   }
 
   final Completer<GoogleMapController> googleMapCompleter = Completer();
@@ -20,18 +22,22 @@ class MapManager with ChangeNotifier {
   // final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
 
   CustomersState customersState = CustomersState();
+  CurrentLocationState currentLocationState = CurrentLocationState();
 
-  Future<void> getCurrentLocation(BuildContext context) async {
+  Future<void> getCurrentLocation() async {
     final currentLocation = await deviceLocation.getCurrentLocation();
     currentLocation.fold((l) {
       if (l is CurrentLocationServiceDisabledFailure) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('الموقع غير متاح قم بتفعيل ال gps')));
+        OneContext().showSnackBar(builder: (BuildContext? x) {
+          return SnackBar(content: Text('الموقع غير متاح قم بتفعيل ال gps'));
+        });
       }
+/*
       if (l is CurrentLocationPermissionNotGrantedFailure) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text('صلاحيه الوصول الموقع غير مفعله قم بتفعيلها')));
       }
+*/
     }, (r) async {
       final googleMapController = await googleMapCompleter.future;
       googleMapController.animateCamera(
@@ -42,6 +48,8 @@ class MapManager with ChangeNotifier {
           ),
         ),
       );
+      currentLocationState = CurrentLocationLoadingSuccess(currentLocation: r);
+      // update();
     });
   }
 
